@@ -59,7 +59,7 @@ class CastleEscapeEnv(gym.Env):
             'player_position': (0, 0),
             'player_health': 'Full',
             'guard_positions': {
-                guard: random.choice(self.rooms[1:-1]) for guard in self.guards
+                guard: random.choice(self.rooms[1:-1], replace=False) for guard in self.guards
             }  # Guards in random rooms (not the goal or the starting)
         }
         return self.get_observation()
