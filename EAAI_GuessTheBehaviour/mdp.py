@@ -22,7 +22,7 @@ class CastleEscapeMDP:
         self.current_state = {
             'player_position': (0, 0),
             'player_health': 'Full',
-            'guard_positions': {guard: random.choice(self.rooms[:-1]) for guard in self.guards}  # Guards in random rooms (not the goal)
+            'guard_positions': {guard: random.choice(self.rooms[1:-1]) for guard in self.guards}  # Guards in random rooms (not the goal or the starting)
         }
 
         # Rewards
@@ -50,7 +50,14 @@ class CastleEscapeMDP:
         return False
     
     def move_player(self, action):
-        """ Move player based on the action """
+        """ Move player based on the action, but prevent movement if a guard is in the same room """
+        current_position = self.current_state['player_position']
+        guards_in_room = [guard for guard in self.guards if self.current_state['guard_positions'][guard] == current_position]
+        
+        # If there's a guard in the room, the player must fight or hide
+        if guards_in_room:
+            return f"Guard {guards_in_room[0]} is in the room! You must fight or hide."
+        
         x, y = self.current_state['player_position']
         directions = {
             'UP': (x-1, y),
@@ -76,6 +83,7 @@ class CastleEscapeMDP:
         # No movement if out of bounds
         else:
             return "Out of bounds!"
+
     
     def move_player_to_random_adjacent(self):
         """ Move player to a random adjacent cell without going out of bounds """
@@ -107,6 +115,7 @@ class CastleEscapeMDP:
                     self.current_state['player_health'] = 'Injured'
                 elif self.current_state['player_health'] == 'Injured':
                     self.current_state['player_health'] = 'Critical'
+                self.move_player_to_random_adjacent()  # Move player to a random adjacent cell after defeat
                 return f"Fought {guard} and lost!", self.rewards['combat_loss']
         return "No guard to fight!"
     
