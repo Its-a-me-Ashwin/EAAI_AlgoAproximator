@@ -7,7 +7,7 @@ from mdp import CastleEscapeMDP  # Import the CastleEscapeMDP class
 pygame.init()
 
 # Constants
-WIDTH, HEIGHT = 600, 600  # 5x5 grid, each room is 120x120 pixels
+WIDTH, HEIGHT = 600, 840  # 5x5 grid, each room is 120x120 pixels
 GRID_SIZE = 5
 CELL_SIZE = WIDTH // GRID_SIZE
 
@@ -17,10 +17,11 @@ RED = (255, 0, 0)
 BLACK = (0, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
+GRAY = (200, 200, 200)
 DARK_GRAY = (50, 50, 50)
 YELLOW = (255, 255, 0)  # Color for the goal room
 
-## Please add the file paths and use them to rneder som cool looking stuff.
+## Please add the file paths and use them to render some cool looking stuff.
 IMGFILEPATH = {
 
 }
@@ -37,21 +38,25 @@ def position_to_grid(position):
     row, col = position
     return col * CELL_SIZE, row * CELL_SIZE
 
-# Draw the grid for the rooms
+# Draw the grid for the rooms and shade console area
 def draw_grid():
     for x in range(0, WIDTH, CELL_SIZE):
-        for y in range(0, HEIGHT, CELL_SIZE):
+        for y in range(0, 600, CELL_SIZE):
             rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
             pygame.draw.rect(screen, BLACK, rect, 1)
+
+    # Shade
+    rect = pygame.Rect(0, 600, WIDTH, HEIGHT - 600)
+    pygame.draw.rect(screen, GRAY, rect)
 
 # Draw the goal room in yellow
 def draw_goal_room():
     x, y = position_to_grid(game.goal_room)
-    rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
+    rect = pygame.Rect(x, y, CELL_SIZE-2, CELL_SIZE-2)
     pygame.draw.rect(screen, YELLOW, rect)
     font = pygame.font.Font(None, 36)
     label = font.render('Goal', True, BLACK)
-    screen.blit(label, (x + CELL_SIZE // 4, y + CELL_SIZE // 4))
+    screen.blit(label, (x + CELL_SIZE // 4 +1, y + CELL_SIZE // 4 +1))
 
 # Draw player at a given position
 def draw_player(position):
@@ -74,6 +79,7 @@ def draw_guards(guard_positions):
 # Draw player and guard together if they are in the same room
 def draw_player_and_guard_together(position, guard_positions):
     guards_in_room = [guard for guard, pos in guard_positions.items() if pos == position]
+    guards_not_in_room = [guard for guard in guard_positions if guard not in guards_in_room]
     if guards_in_room:
         x, y = position_to_grid(position)
         # Draw the player
@@ -91,12 +97,15 @@ def draw_player_and_guard_together(position, guard_positions):
         label = font.render(guards_in_room[0], True, WHITE)
         screen.blit(label, (guard_x - 10, guard_y - 10))
 
+    for guard in guards_not_in_room:
+        draw_guards({guard: guard_positions[guard]})
+
 # Draw player health status
 def draw_health(health):
     font = pygame.font.Font(None, 36)
     health_text = f"Health: {health}"
     health_surface = font.render(health_text, True, BLUE)
-    screen.blit(health_surface, (10, HEIGHT - 50))
+    screen.blit(health_surface, (10, HEIGHT - 40))
 
 # Display victory or defeat message
 def display_end_message(message):
@@ -153,8 +162,11 @@ def main():
             display_end_message(end_message)
 
         # Print the latest 5 results on the screen
+        font = pygame.font.Font(None, 30)
+        console_surface = font.render("Console", True, BLUE)
+        screen.blit(console_surface, (10, 610))
         font = pygame.font.Font(None, 24)
-        y_offset = 10
+        y_offset = 645
         for result in action_results[-5:]:
             result_surface = font.render(result, True, BLACK)
             screen.blit(result_surface, (10, y_offset))
