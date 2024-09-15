@@ -20,10 +20,19 @@ class CastleEscapeMDP:
         
         # Set initial state
         self.current_state = {
-            'player_position': (0, 0),
-            'player_health': 'Full',
-            'guard_positions': {guard: random.choice(self.rooms[1:-1]) for guard in self.guards}  # Guards in random rooms (not the goal or the starting)
+        'player_position': (0, 0),
+        'player_health': 'Full',
+        'guard_positions': {}
         }
+        # Exclude the starting position (0,0) and the goal room (4,4)
+        available_rooms = self.rooms.copy()
+        available_rooms.remove((0, 0))
+        available_rooms.remove(self.goal_room)
+        random.shuffle(available_rooms)
+        
+        # Assign unique rooms to each guard
+        for guard in self.guards:
+            self.current_state['guard_positions'][guard] = available_rooms.pop()
 
         # Rewards
         self.rewards = {
