@@ -4,16 +4,7 @@ import time
 import random
 from mdp_gym import CastleEscapeEnv  # Import the CastleEscapeMDP class
 
-# Initialize Pygame
-pygame.init()
 
-clock = None
-game_ended = False
-action_results = [None, None, None, None, None]
-
-fps = 60
-sleeptime = 0.1
-# Constants
 WIDTH, HEIGHT = 600, 840  # 5x5 grid, each room is 120x120 pixels
 GRID_SIZE = 5
 CELL_SIZE = WIDTH // GRID_SIZE
@@ -34,11 +25,26 @@ IMGFILEPATH = {
 }
 
 # Setup display
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Castle Escape MDP Visualization")
+screen=None
+
+game_ended = False
+action_results = [None, None, None, None, None]
+
+fps = 60
+sleeptime = 0.1
+clock = None
 
 # Initialize MDP game
 game = CastleEscapeEnv()
+
+# Initialize Pygame
+def setup(GUI=True):
+    global screen
+    if GUI:
+        pygame.init()
+        screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        pygame.display.set_caption("Castle Escape MDP Visualization")
+        # Constants
 
 # Map room to grid cell positions
 def position_to_grid(position):
