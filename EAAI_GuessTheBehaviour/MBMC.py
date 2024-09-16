@@ -48,7 +48,7 @@ def estimate_victory_probability():
     - None
 
     Returns:
-    - P (numpy array): Empiricaly estimated probability of defeating guards 1-4.
+    - P (numpy array): Empirically estimated probability of defeating guards 1-4.
     """
 	P = np.zeros(len(env.guards))
 
