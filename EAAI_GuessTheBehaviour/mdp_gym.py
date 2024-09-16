@@ -15,8 +15,8 @@ class CastleEscapeEnv(gym.Env):
 
         # Define health states
         self.health_states = ['Full', 'Injured', 'Critical']
-        self.health_state_to_int = {'Full': 0, 'Injured': 1, 'Critical': 2}
-        self.int_to_health_state = {0: 'Full', 1: 'Injured', 2: 'Critical'}
+        self.health_state_to_int = {'Full': 2, 'Injured': 1, 'Critical': 0}
+        self.int_to_health_state = {2: 'Full', 1: 'Injured', 0: 'Critical'}
 
         # Define the guards with their strengths (affects combat) and keenness (affects hiding)
         self.guards = {
