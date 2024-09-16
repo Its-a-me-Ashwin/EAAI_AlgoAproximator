@@ -1,11 +1,18 @@
 import pygame
 import sys
+import time
 import random
 from mdp_gym import CastleEscapeEnv  # Import the CastleEscapeMDP class
 
 # Initialize Pygame
 pygame.init()
 
+clock = None
+game_ended = False
+action_results = [None, None, None, None, None]
+
+fps = 60
+sleeptime = 0.1
 # Constants
 WIDTH, HEIGHT = 600, 840  # 5x5 grid, each room is 120x120 pixels
 GRID_SIZE = 5
@@ -116,10 +123,9 @@ def display_end_message(message):
 
 # Main loop
 def main():
+    global game_ended, action_results
     clock = pygame.time.Clock()
     running = True
-    action_results = []
-    game_ended = False
     end_message = ""
 
     while running:
@@ -128,39 +134,27 @@ def main():
                 running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_w and not game_ended:
-                    # Play one turn in the game when the spacebar is pressed
-                    #action = random.choice(['UP', 'DOWN', 'LEFT', 'RIGHT', 'fight', 'hide'])
                     action = "UP"
                     result = game.step(action)
                     action_results.append(f"Action: {action}, Result: {result}")
                 if event.key == pygame.K_s and not game_ended:
-                    # Play one turn in the game when the spacebar is pressed
-                    #action = random.choice(['UP', 'DOWN', 'LEFT', 'RIGHT', 'fight', 'hide'])
                     action = "DOWN"
                     result = game.step(action)
                     action_results.append(f"Action: {action}, Result: {result}")
                 if event.key == pygame.K_a and not game_ended:
-                    # Play one turn in the game when the spacebar is pressed
-                    #action = random.choice(['UP', 'DOWN', 'LEFT', 'RIGHT', 'fight', 'hide'])
                     action = "LEFT"
                     result = game.step(action)
                     action_results.append(f"Action: {action}, Result: {result}")
                 if event.key == pygame.K_d and not game_ended:
-                    # Play one turn in the game when the spacebar is pressed
-                    #action = random.choice(['UP', 'DOWN', 'LEFT', 'RIGHT', 'fight', 'hide'])
                     action = "RIGHT"
                     result = game.step(action)
                     action_results.append(f"Action: {action}, Result: {result}")
                 if event.key == pygame.K_f and not game_ended:
-                    # Play one turn in the game when the spacebar is pressed
-                    #action = random.choice(['UP', 'DOWN', 'LEFT', 'RIGHT', 'fight', 'hide'])
-                    action = "fight"
+                    action = "FIGHT"
                     result = game.step(action)
                     action_results.append(f"Action: {action}, Result: {result}")
                 if event.key == pygame.K_h and not game_ended:
-                    # Play one turn in the game when the spacebar is pressed
-                    #action = random.choice(['UP', 'DOWN', 'LEFT', 'RIGHT', 'fight', 'hide'])
-                    action = "hide"
+                    action = "HIDE"
                     result = game.step(action)
                     action_results.append(f"Action: {action}, Result: {result}")
         screen.fill(WHITE)
@@ -207,6 +201,70 @@ def main():
 
     pygame.quit()
     sys.exit()
+
+def refresh(obs, reward, done, info, delay=0.1):
+    global fps, sleeptime, game_ended, clock, action_results
+    
+    try:
+        action = info['action']
+    except:
+        action = "None"
+
+    result = "Pos: {}, Health: {}, Guard In Cell: {}, Reward: {}, Action: {}".format(obs['player_position'], obs['player_health'], obs['guard_in_cell'], reward, action)
+
+    if None in action_results:
+        action_results[action_results.index(None)] = result
+        print(action_results)
+    else:
+        action_results.pop(0)
+        action_results.append(result)
+        print(action_results)
+
+    fps = 60
+    clock = pygame.time.Clock()
+    screen.fill(WHITE)
+    draw_grid()
+
+    # Draw the goal room
+    draw_goal_room()
+
+    # Check if player and a guard are in the same room and draw them together
+    if game.current_state['player_position'] in game.current_state['guard_positions'].values():
+        draw_player_and_guard_together(game.current_state['player_position'], game.current_state['guard_positions'])
+    else:
+        # Draw the player and guards in separate positions
+        draw_player(game.current_state['player_position'])
+        draw_guards(game.current_state['guard_positions'])
+
+    # Display player health
+    draw_health(game.current_state['player_health'])
+
+    if game.is_terminal() == 'goal':
+        game_ended = True
+        end_message = "Victory!"
+    elif game.is_terminal() == 'defeat':
+        game_ended = True
+        end_message = "Defeat!"
+
+    if game_ended:
+        display_end_message(end_message)
+
+    # Print the latest 5 results on the screen
+    font = pygame.font.Font(None, 30)
+    console_surface = font.render("Console", True, BLUE)
+    screen.blit(console_surface, (10, 610))
+    font = pygame.font.Font(None, 24)
+    y_offset = 645
+    for result in action_results:
+        result_surface = font.render(result, True, BLACK)
+        screen.blit(result_surface, (10, y_offset))
+        y_offset += 30
+
+    # Check for terminal state
+    pygame.display.flip()
+    clock.tick(fps)
+    time.sleep(sleeptime)
+
 
 if __name__ == "__main__":
     main()

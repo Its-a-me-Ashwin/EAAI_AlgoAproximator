@@ -36,7 +36,7 @@ class CastleEscapeEnv(gym.Env):
         }
 
         # Actions
-        self.actions = ['UP', 'DOWN', 'LEFT', 'RIGHT', 'fight', 'hide']
+        self.actions = ['UP', 'DOWN', 'LEFT', 'RIGHT', 'FIGHT', 'HIDE']
         self.action_space = spaces.Discrete(len(self.actions))
 
         # Observation space
@@ -55,20 +55,31 @@ class CastleEscapeEnv(gym.Env):
 
     def reset(self):
         """Resets the game to the initial state"""
+        #print(self.rooms[1:-1])
+        rnd_indices = np.random.choice(range(1,len(self.rooms)-1), size=len(self.guards), replace=False)
+        guard_pos = [self.rooms[i] for i in rnd_indices]
         self.current_state = {
             'player_position': (0, 0),
             'player_health': 'Full',
             'guard_positions': {
-                guard: random.choice(self.rooms[1:-1], replace=False) for guard in self.guards
+                guard: pos for guard, pos in zip(self.guard_names, guard_pos)
             }  # Guards in random rooms (not the goal or the starting)
         }
-        return self.get_observation()
+        return self.get_observation(), 0, False, {}
 
     def get_observation(self):
+        guard_in_cell = None
+        guard_positions = self.current_state['guard_positions']
+        player_position = self.current_state['player_position']
+        for guard in guard_positions:
+            if guard_positions[guard] == player_position:
+                guard_in_cell = guard
+                break
+
         obs = {
             'player_position': self.current_state['player_position'],
             'player_health': self.health_state_to_int[self.current_state['player_health']],
-            'guard_positions': self.current_state['guard_positions']
+            'guard_in_cell': guard_in_cell if guard_in_cell else None,
         }
         return obs
 
@@ -187,9 +198,9 @@ class CastleEscapeEnv(gym.Env):
         """Take an action and update the state"""
         if action in ['UP', 'DOWN', 'LEFT', 'RIGHT']:
             return self.move_player(action)
-        elif action == 'fight':
+        elif action == 'FIGHT':
             return self.try_fight()
-        elif action == 'hide':
+        elif action == 'HIDE':
             return self.try_hide()
         else:
             return "Invalid action!", 0
@@ -216,7 +227,7 @@ class CastleEscapeEnv(gym.Env):
             result += f" You've been caught! {self.rewards['combat_loss']} points!"
 
         observation = self.get_observation()
-        info = {'result': result}
+        info = {'result': result, 'action': action_name}
 
         return observation, reward, done, info
 
@@ -228,15 +239,15 @@ class CastleEscapeEnv(gym.Env):
         """Performs cleanup"""
         pass
 
-if __name__ == "__main__":
-    env = CastleEscapeEnv()
-    obs = env.reset()
-    done = False
-    while not done:
-        env.render()
-        action = env.action_space.sample()
-        print(f"Action: {env.actions[action]}")
-        obs, reward, done, info = env.step(action)
-        print(f"Result: {info['result']}")
-        print(f"Reward: {reward}")
-        print("\n")
+# if __name__ == "__main__":
+#     env = CastleEscapeEnv()
+#     obs = env.reset()
+#     done = False
+#     while not done:
+#         env.render()
+#         action = env.action_space.sample()
+#         print(f"Action: {env.actions[action]}")
+#         obs, reward, done, info = env.step(action)
+#         print(f"Result: {info['result']}")
+#         print(f"Reward: {reward}")
+#         print("\n")
