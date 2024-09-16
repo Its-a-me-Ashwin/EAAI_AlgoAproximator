@@ -13,4 +13,5 @@ while not done: # Loop until game is completed
 	action = env.action_space.sample()				# Random action
 	obs, reward, done, info = env.step(action)      # Take a step in the environment
 	refresh(obs, reward, done, info)
+	print(obs, reward, done, info)
 input()

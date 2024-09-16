@@ -210,15 +210,13 @@ def refresh(obs, reward, done, info, delay=0.1):
     except:
         action = "None"
 
-    result = "Pos: {}, Health: {}, Guard In Cell: {}, Reward: {}, Action: {}".format(obs['player_position'], obs['player_health'], obs['guard_in_cell'], reward, action)
+    result = "Pos: {}, Health: {}, Guard In Cell: {}, Reward: {}, Action: {}".format(obs['player_position'], game.int_to_health_state[obs['player_health']], obs['guard_in_cell'], reward, action)
 
     if None in action_results:
         action_results[action_results.index(None)] = result
-        print(action_results)
     else:
         action_results.pop(0)
         action_results.append(result)
-        print(action_results)
 
     fps = 60
     clock = pygame.time.Clock()
