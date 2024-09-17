@@ -56,6 +56,9 @@ Complete the function below to do the following:
 		   For instance, the observation {'player_position': (1, 2), 'player_health': 2, 'guard_in_cell='G4'} 
 		   will be hashed to 1*5*3*5 + 2*3*5 + 2*5 + 4 = 119. There are 375 unique states.
 
+		h. To refresh the game screen if using the GUI, use the refresh(obs, reward, done, info) function, with the 'if gui_flag:' condition.
+		   Example usage lines 23-24. This function should be called after every action.
+
 	Finally, return the np array, P which contains four float values, each representing the probability of defeating guards 1-4 respectively.
 
 '''
